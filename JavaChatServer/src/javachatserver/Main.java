@@ -32,7 +32,8 @@ public class Main {
 
             while (true) {
                 Socket acceptedSocket = serverSocket.accept();
-                System.out.println("CONNECTED: " + acceptedSocket.getInetAddress());
+                String senderAddress = acceptedSocket.getInetAddress().getHostAddress();
+                System.out.println("CONNECTED: " + senderAddress);
 
                 DataInputStream dis = new DataInputStream(acceptedSocket.getInputStream());
                 DataOutputStream dos = new DataOutputStream(acceptedSocket.getOutputStream());
@@ -48,11 +49,14 @@ public class Main {
                     case "MSG": {
                         String recipient = dis.readUTF();
                         String message = dis.readUTF();
-                        
+
                         System.out.printf("Send message:\n  address: %s\n  message: %s\n\n", recipient, message);
-                        
-                        dos.writeUTF("OK");
+
+                        boolean sent = sendMessage(senderAddress, recipient, message);
+
+                        dos.writeUTF(sent ? "OK" : "ERROR");
                         dos.flush();
+
                         break;
                     }
                 }
@@ -62,6 +66,30 @@ public class Main {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
 
+    }
+
+    private static boolean sendMessage(String sender, String recipient, String message) {
+        try (Socket socket = new Socket(recipient, SERVER_PORT + 1)) {
+            DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
+            DataInputStream dis = new DataInputStream(socket.getInputStream());
+
+            System.out.println("SEND MSG: " + sender + " " + recipient + " " + message);
+
+            dos.writeUTF("MSG");
+            dos.flush();
+            dos.writeUTF(sender);
+            dos.flush();
+            dos.writeUTF(message);
+            dos.flush();
+
+            if ("OK".equals(dis.readUTF())) {
+                return true;
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return false;
     }
 
 }

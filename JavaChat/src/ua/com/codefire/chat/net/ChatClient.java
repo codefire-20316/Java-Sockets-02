@@ -12,7 +12,6 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import ua.com.codefire.chat.Main;
 
 /**
  *
@@ -46,7 +45,7 @@ public class ChatClient implements Client, AutoCloseable {
         if (socket == null) {
             try {
                 socket = new Socket();
-                socket.setSoTimeout(1000);
+                socket.setSoTimeout(5000);
 
                 InetSocketAddress serverDestination = new InetSocketAddress(address, port);
                 socket.connect(serverDestination);
@@ -55,7 +54,7 @@ public class ChatClient implements Client, AutoCloseable {
 
                 return true;
             } catch (IOException ex) {
-                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ChatClient.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
 
